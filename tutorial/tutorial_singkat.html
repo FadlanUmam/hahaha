@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Sistem POS Apotek - Singkat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #34495e;
+            background: #ecf0f1;
+            padding: 8px;
+            border-left: 3px solid #3498db;
+            margin-top: 20px;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            margin-top: 15px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 10px;
+        }
+        
+        code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 8px;
+            border-radius: 3px;
+            display: block;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 3px;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 11px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        
+        th {
+            background: #3498db;
+            color: white;
+        }
+        
+        .file-structure {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            margin: 8px 0;
+            font-size: 9px;
+        }
+        
+        ul, ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 3px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📚 Tutorial Sistem POS Apotek</h1>
+    <p style="text-align: center; font-style: italic; color: #666;">
+        Panduan Membuat Sistem Point of Sale dengan PHP PDO
+    </p>
+    
+    <h2>📋 Daftar Isi</h2>
+    <ol>
+        <li>Persiapan Environment</li>
+        <li>Setup Database</li>
+        <li>Struktur Project</li>
+        <li>Konfigurasi Koneksi</li>
+        <li>Model & Autentikasi</li>
+        <li>Interface & CRUD</li>
+        <li>Sistem POS</li>
+        <li>Testing & Deploy</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2>1. 🛠️ Persiapan Environment</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">1</span>Software yang Diperlukan</h3>
+        <ul>
+            <li><strong>XAMPP</strong> - Apache + MySQL + PHP</li>
+            <li><strong>Text Editor</strong> - VS Code/Sublime Text</li>
+            <li><strong>Browser</strong> - Chrome/Firefox</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">2</span>Setup Project</h3>
+        <p>Buat folder project:</p>
+        <code>D:\xampp81\htdocs\pos_apotek\</code>
+        <div class="highlight">Pastikan XAMPP (Apache & MySQL) sudah running</div>
+    </div>
+
+    <h2>2. 🗄️ Setup Database</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">3</span>Buat Database Schema</h3>
+        <p>File: <code>database/schema.sql</code></p>
+        <code>
+CREATE DATABASE pos_apotek;
+USE pos_apotek;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nama_lengkap VARCHAR(100) NOT NULL,
+    role ENUM('admin', 'kasir', 'gudang') NOT NULL
+);
+
+CREATE TABLE obat (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kode_obat VARCHAR(20) UNIQUE NOT NULL,
+    nama_obat VARCHAR(200) NOT NULL,
+    harga_beli DECIMAL(10,2) NOT NULL,
+    harga_jual DECIMAL(10,2) NOT NULL,
+    stok INT DEFAULT 0
+);
+        </code>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>3. 📁 Struktur Project</h2>
+    
+    <div class="file-structure">
+pos_apotek/
+├── assets/css/style.css
+├── config/
+│   ├── config.php
+│   └── database.php
+├── database/schema.sql
+├── models/
+│   ├── User.php
+│   └── Obat.php
+├── index.php
+├── login.php
+├── dashboard.php
+├── obat.php
+├── penjualan.php
+└── ...
+    </div>
+
+    <h2>4. ⚙️ Konfigurasi Koneksi</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">4</span>Database Connection</h3>
+        <p>File: <code>config/database.php</code></p>
+        <code>
+&lt;?php
+class Database {
+    private $host = 'localhost';
+    private $db_name = 'pos_apotek';
+    private $username = 'root';
+    private $password = '';
+
+    public function getConnection() {
+        try {
+            $this->conn = new PDO(
+                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                $this->username, $this->password,
+                array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+            );
+            return $this->conn;
+        } catch(PDOException $exception) {
+            echo "Connection error: " . $exception->getMessage();
+        }
+    }
+}
+?&gt;
+        </code>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">5</span>Config Utama</h3>
+        <p>File: <code>config/config.php</code></p>
+        <code>
+&lt;?php
+define('APP_NAME', 'Sistem POS Apotek');
+session_start();
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+function requireLogin() {
+    if (!isLoggedIn()) {
+        header('Location: login.php');
+        exit();
+    }
+}
+?&gt;
+        </code>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>5. 🏗️ Model & Autentikasi</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">6</span>Model User</h3>
+        <p>File: <code>models/User.php</code></p>
+        <code>
+&lt;?php
+class User {
+    private $conn;
+    private $table_name = "users";
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function login($username, $password) {
+        $query = "SELECT id, username, password, nama_lengkap, role 
+                  FROM " . $this->table_name . " 
+                  WHERE username = :username";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (password_verify($password, $row['password'])) {
+                return $row;
+            }
+        }
+        return false;
+    }
+}
+?&gt;
+        </code>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">7</span>Halaman Login</h3>
+        <p>File: <code>login.php</code></p>
+        <code>
+&lt;?php
+require_once 'config/config.php';
+
+if ($_POST) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    
+    $database = new Database();
+    $db = $database->getConnection();
+    $user = new User($db);
+    
+    $result = $user->login($username, $password);
+    if ($result) {
+        $_SESSION['user_id'] = $result['id'];
+        $_SESSION['user_role'] = $result['role'];
+        header('Location: dashboard.php');
+        exit();
+    }
+}
+?&gt;
+&lt;!-- HTML Form Login --&gt;
+        </code>
+    </div>
+
+    <h2>6. 🎨 Interface & CRUD</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">8</span>CSS Styling</h3>
+        <p>File: <code>assets/css/style.css</code></p>
+        <ul>
+            <li>Reset CSS</li>
+            <li>Login page styling</li>
+            <li>Dashboard layout</li>
+            <li>Button dan form styling</li>
+            <li>Responsive design</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">9</span>Dashboard</h3>
+        <p>File: <code>dashboard.php</code></p>
+        <ul>
+            <li>Sidebar navigation berdasarkan role</li>
+            <li>Dashboard cards dengan statistik</li>
+            <li>Recent activities</li>
+            <li>User info di top navigation</li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="step">
+        <h3><span class="step-number">10</span>CRUD Obat</h3>
+        <p>File: <code>obat.php</code></p>
+        <ul>
+            <li>Form tambah obat</li>
+            <li>Tabel list obat</li>
+            <li>Modal edit obat</li>
+            <li>Delete dengan konfirmasi</li>
+        </ul>
+    </div>
+
+    <h2>7. 🛒 Sistem POS</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">11</span>Interface POS</h3>
+        <p>File: <code>penjualan.php</code></p>
+        <ul>
+            <li>Search obat real-time</li>
+            <li>Keranjang belanja</li>
+            <li>Perhitungan total & PPN</li>
+            <li>Input pembayaran</li>
+            <li>Cetak struk</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">12</span>JavaScript POS</h3>
+        <code>
+// Search obat
+function searchProducts() {
+    fetch('penjualan.php?action=search_obat&keyword=' + keyword)
+        .then(response => response.json())
+        .then(data => displayProducts(data));
+}
+
+// Tambah ke keranjang
+function addToCart(product) {
+    cart.push({
+        id: product.id,
+        nama_obat: product.nama_obat,
+        price: product.harga_jual,
+        quantity: 1
+    });
+    updateCartDisplay();
+}
+
+// Proses transaksi
+function processTransaction() {
+    // Submit form dengan data cart
+    // Redirect ke struk.php
+}
+        </code>
+    </div>
+
+    <h2>8. 🧪 Testing & Deploy</h2>
+    
+    <div class="step">
+        <h3><span class="step-number">13</span>Testing Checklist</h3>
+        <ul>
+            <li>✅ Login dengan semua role</li>
+            <li>✅ CRUD obat berfungsi</li>
+            <li>✅ POS transaction</li>
+            <li>✅ Print struk</li>
+            <li>✅ Responsive design</li>
+            <li>✅ Database integrity</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3><span class="step-number">14</span>Deployment</h3>
+        <ol>
+            <li>Upload files ke web server</li>
+            <li>Import database schema</li>
+            <li>Update konfigurasi database</li>
+            <li>Test di production environment</li>
+        </ol>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>📊 Database Schema Lengkap</h2>
+    
+    <table>
+        <tr>
+            <th>Tabel</th>
+            <th>Field Utama</th>
+            <th>Fungsi</th>
+        </tr>
+        <tr>
+            <td>users</td>
+            <td>id, username, password, role</td>
+            <td>Autentikasi pengguna</td>
+        </tr>
+        <tr>
+            <td>kategori_obat</td>
+            <td>id, nama_kategori</td>
+            <td>Kategori obat</td>
+        </tr>
+        <tr>
+            <td>obat</td>
+            <td>id, kode_obat, nama_obat, harga, stok</td>
+            <td>Data obat</td>
+        </tr>
+        <tr>
+            <td>supplier</td>
+            <td>id, nama_supplier, alamat</td>
+            <td>Data pemasok</td>
+        </tr>
+        <tr>
+            <td>penjualan</td>
+            <td>id, no_transaksi, total_harga</td>
+            <td>Transaksi penjualan</td>
+        </tr>
+        <tr>
+            <td>detail_penjualan</td>
+            <td>penjualan_id, obat_id, jumlah</td>
+            <td>Detail item penjualan</td>
+        </tr>
+    </table>
+
+    <h2>🔐 Akun Default</h2>
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Role</th>
+        </tr>
+        <tr>
+            <td>admin</td>
+            <td>password</td>
+            <td>Admin</td>
+        </tr>
+        <tr>
+            <td>kasir1</td>
+            <td>password</td>
+            <td>Kasir</td>
+        </tr>
+        <tr>
+            <td>gudang1</td>
+            <td>password</td>
+            <td>Gudang</td>
+        </tr>
+    </table>
+
+    <h2>🎯 Fitur Utama</h2>
+    <ul>
+        <li><strong>Multi-role Access:</strong> Admin, Kasir, Gudang</li>
+        <li><strong>Real-time POS:</strong> Interface modern untuk kasir</li>
+        <li><strong>Stock Management:</strong> Alert stok minimum & expired</li>
+        <li><strong>Reporting:</strong> Laporan penjualan & pembelian</li>
+        <li><strong>Security:</strong> Password hashing & input validation</li>
+        <li><strong>Responsive:</strong> Compatible dengan semua device</li>
+    </ul>
+
+    <div class="highlight">
+        <h3>💡 Tips Pengembangan</h3>
+        <ul>
+            <li>Gunakan PDO untuk keamanan database</li>
+            <li>Implementasi proper error handling</li>
+            <li>Gunakan CSS Grid untuk layout modern</li>
+            <li>Validasi input di frontend & backend</li>
+            <li>Test semua fitur sebelum deploy</li>
+        </ul>
+    </div>
+
+    <hr>
+    <p style="text-align: center; color: #666; font-size: 10px;">
+        Tutorial Sistem POS Apotek | PHP PDO | 2024
+    </p>
+</body>
+</html>
